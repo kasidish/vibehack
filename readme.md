@@ -1,3 +1,7 @@
+**อธิบายการทำงานทั้งระบบ โค้ด การกรองข้อมูล และผลลัพธ์:** อ่านได้ที่ [DOCUMENTATION.md](./DOCUMENTATION.md)
+
+--------------------------------------
+
 System Architecture :
 
 Browser → Next.js (page.tsx dashboard)
