@@ -177,4 +177,4 @@ Vibehack/
 - **backend/.env**: `SUPABASE_URL`, `SUPABASE_KEY`, `OPENAI_API_KEY`
 - **frontend/.env.local**: `NEXT_PUBLIC_API_URL=http://192.168.1.112:3000` (หรือที่อยู่ backend จริง)
 
-ถ้าต้องการให้ระบบทำงานจากเครื่องอื่นในเครือข่าย (เช่น เปิดด้วย IP 192.168.1.112) Backend ต้องรันด้วย `--host 0.0.0.0 --port 8000` และ Frontend ต้องชี้ `NEXT_PUBLIC_API_URL` ไปที่ IP นั้น
+ถ้าต้องการให้ระบบทำงานจากเครื่องอื่นในเครือข่าย (เช่น เปิดด้วย IP 192.168.1.112) Backend ต้องรันด้วย `--host 0.0.0.0 --port 3000` และ Frontend ต้องชี้ `NEXT_PUBLIC_API_URL` ไปที่ IP นั้น
