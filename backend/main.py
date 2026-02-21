@@ -6,10 +6,18 @@ from prophet import Prophet
 import os
 import io
 import json
+from openai import OpenAI
+from pydantic import BaseModel
 
-# Load .env from this file's directory so it works regardless of CWD
+class ChatRequest(BaseModel):
+    question: str
+
+# Load .env first so OPENAI_API_KEY and others are available
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
-load_dotenv()  # also load from current working directory
+load_dotenv()
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 app = FastAPI()
 
@@ -118,7 +126,13 @@ def forecast_get():
     grouped.columns = ["ds", "y"]
     if len(grouped) < 2:
         raise HTTPException(status_code=400, detail="Need at least 2 distinct dates. Add more data or use POST /forecast with CSV/JSON.")
-    return _run_prophet_forecast(grouped)
+    forecast_result = _run_prophet_forecast(grouped)
+    ai_result = _generate_ai_insight(forecast_result)
+
+    return {
+        "forecast": forecast_result,
+        **ai_result
+}
 
 
 @app.post("/forecast")
@@ -167,4 +181,100 @@ async def forecast_post(request: Request, file: UploadFile | None = File(None)):
         raise HTTPException(status_code=400, detail="Data must include a 'sale_date' column.")
     records = df.to_dict(orient="records")
     grouped = _records_to_grouped_df(records)
-    return _run_prophet_forecast(grouped)
+    forecast_result = _run_prophet_forecast(grouped)
+    ai_result = _generate_ai_insight(forecast_result)
+
+    return {
+        "forecast": forecast_result,
+        **ai_result
+}
+
+def _generate_ai_insight(forecast_data: list):
+    if client is None:
+        return {
+            "insight": "AI key not configured. Add OPENAI_API_KEY to backend/.env and restart the backend.",
+        }
+
+    try:
+        forecast_text = "\n".join(
+            [f"{row['ds']} → {row['yhat']}" for row in forecast_data]
+        )
+        prompt = f"""
+Here is a 7-day sales forecast:
+
+{forecast_text}
+
+1. Summarize the trend in simple business language.
+2. Give one short recommendation to improve sales.
+"""
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a business AI analyst."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        text = completion.choices[0].message.content or ""
+        return {"insight": text}
+    except Exception as e:
+        err_str = str(e).lower()
+        if "401" in err_str or "invalid_api_key" in err_str or "incorrect api key" in err_str:
+            insight_msg = (
+                "AI insight unavailable: invalid OpenAI API key. "
+                "Get a valid key at https://platform.openai.com/account/api-keys and set OPENAI_API_KEY in backend/.env, then restart the backend. "
+                "Forecast data is still shown below."
+            )
+        elif "429" in err_str or "quota" in err_str or "insufficient" in err_str:
+            insight_msg = (
+                "AI insight unavailable: your OpenAI account is out of quota or has no billing. "
+                "Add a payment method at https://platform.openai.com/account/billing to enable AI insights. "
+                "Forecast data is still shown below."
+            )
+        else:
+            insight_msg = f"AI insight unavailable: {str(e)}. Forecast data is still shown below."
+        return {"insight": insight_msg}
+
+@app.post("/chat")
+def chat_with_ai(payload: ChatRequest):
+    if client is None:
+        raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+
+    # ดึง forecast ล่าสุดจาก Supabase
+    response = supabase.table("sales").select("*").execute()
+    data = response.data
+
+    if not data:
+        raise HTTPException(status_code=400, detail="No sales data")
+
+    df = pd.DataFrame(data)
+    df["sale_date"] = pd.to_datetime(df["sale_date"])
+    grouped = df.groupby("sale_date")["quantity"].sum().reset_index()
+    grouped.columns = ["ds", "y"]
+
+    forecast_result = _run_prophet_forecast(grouped)
+
+    forecast_text = "\n".join(
+        [f"{row['ds']} → {row['yhat']}" for row in forecast_result]
+    )
+
+    prompt = f"""
+    Here is the 7-day sales forecast:
+    {forecast_text}
+
+    User question:
+    {payload.question}
+
+    Answer like a business AI analyst.
+    """
+
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are a business forecasting AI."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return {
+        "answer": completion.choices[0].message.content
+    }
