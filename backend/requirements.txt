@@ -1,5 +1,7 @@
 fastapi
-uvicorn[standard]
-supabase
+uvicorn
 pandas
+numpy
 prophet
+supabase
+python-dotenv
