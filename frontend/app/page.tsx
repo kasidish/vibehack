@@ -115,7 +115,7 @@ export default function Home() {
             <Tooltip
               contentStyle={{ background: "#16213e", border: "1px solid #3a4a6b", color: "#e8e8e8" }}
             />
-            <Line type="monotone" dataKey="yhat" name="Baht" stroke="#7c9ce0" strokeWidth={2} />
+            <Line type="monotone" dataKey="yhat" name="yaht" stroke="#7c9ce0" strokeWidth={2} />
           </LineChart>
         </ResponsiveContainer>
       )}

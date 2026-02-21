@@ -178,3 +178,15 @@ Vibehack/
 - **frontend/.env.local**: `NEXT_PUBLIC_API_URL=http://192.168.1.112:3000` (หรือที่อยู่ backend จริง)
 
 ถ้าต้องการให้ระบบทำงานจากเครื่องอื่นในเครือข่าย (เช่น เปิดด้วย IP 192.168.1.112) Backend ต้องรันด้วย `--host 0.0.0.0 --port 3000` และ Frontend ต้องชี้ `NEXT_PUBLIC_API_URL` ไปที่ IP นั้น
+
+test :
+
+1. Start the backend (from backend). Use --host 0.0.0.0 if you open the app by IP (e.g. http://192.168.1.112:3000):
+   cd backend
+   python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+2. Start the frontend (from frontend):
+   cd frontend
+   npm run dev
+
+3. ngrok http 3000

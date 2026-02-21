@@ -278,3 +278,11 @@ def chat_with_ai(payload: ChatRequest):
     return {
         "answer": completion.choices[0].message.content
     }
+
+@app.get("/")
+def home():
+    return {
+        "app": "Vibehack AI Sales Intelligence",
+        "status": "Running",
+        "docs": "/docs"
+    }

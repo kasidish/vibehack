@@ -45,6 +45,8 @@ How to test :
    cd frontend
    npm run dev
 
-3. Open http://192.168.1.112:3000 in the browser (or http://localhost:3000 on this machine).
+3. ngrok http 3000
+
+// Open http://192.168.1.112:3000 in the browser (or http://localhost:3000 on this machine).
 
 Backend and frontend are set for IP 192.168.1.112 (frontend/.env.local has NEXT_PUBLIC_API_URL=http://192.168.1.112:8000).
