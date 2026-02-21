@@ -103,11 +103,19 @@ export default function Home() {
           <LineChart data={forecast}>
             <CartesianGrid strokeDasharray="3 3" stroke="#3a4a6b" />
             <XAxis dataKey="ds" stroke="#a0a0a0" />
-            <YAxis stroke="#a0a0a0" />
+            <YAxis
+              stroke="#a0a0a0"
+              tickFormatter={(value) =>
+                new Intl.NumberFormat("th-TH", {
+                  style: "currency",
+                  currency: "THB",
+                }).format(value)
+              }
+            />
             <Tooltip
               contentStyle={{ background: "#16213e", border: "1px solid #3a4a6b", color: "#e8e8e8" }}
             />
-            <Line type="monotone" dataKey="yhat" stroke="#7c9ce0" strokeWidth={2} />
+            <Line type="monotone" dataKey="yhat" name="Baht" stroke="#7c9ce0" strokeWidth={2} />
           </LineChart>
         </ResponsiveContainer>
       )}
