@@ -1,0 +1,5 @@
+# Install this if full requirements.txt fails (e.g. prophet on Windows long path)
+fastapi
+uvicorn[standard]
+supabase
+pandas
