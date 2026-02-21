@@ -45,7 +45,7 @@ How to test :
    cd frontend
    npm run dev
 
-3. ngrok http 3000
+3. ngrok http 3000 (open ngrok link)
 
 // Open http://192.168.1.112:3000 in the browser (or http://localhost:3000 on this machine).
 
